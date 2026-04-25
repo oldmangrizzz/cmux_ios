@@ -8,3 +8,4 @@ build/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 *.log
+log1.md
