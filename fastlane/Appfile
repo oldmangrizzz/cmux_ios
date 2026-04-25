@@ -1,0 +1,7 @@
+app_identifier("com.cmuxterm.ios")
+
+# App Store Connect API key configuration
+# Set these as environment variables in GitHub Actions:
+#   APP_STORE_CONNECT_API_KEY_KEY_ID
+#   APP_STORE_CONNECT_API_KEY_ISSUER_ID
+#   APP_STORE_CONNECT_API_KEY_KEY_CONTENT

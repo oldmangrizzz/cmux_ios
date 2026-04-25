@@ -1,0 +1,8 @@
+# Matchfile for code signing
+# Uses App Store Connect API key for auth (set via env vars in CI)
+
+type("appstore")
+app_identifier("com.cmuxterm.ios")
+storage_mode("git")
+git_url("https://github.com/oldmangrizzz/cmux_ios-certs.git")
+git_branch("main")

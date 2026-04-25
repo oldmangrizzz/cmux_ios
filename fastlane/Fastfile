@@ -1,0 +1,51 @@
+# Fastfile for cmux_iOS
+# Builds, signs, and uploads to TestFlight via GitHub Actions.
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    # Generate xcodeproj from project.yml
+    sh("xcodegen")
+
+    # Fetch signing certificates and provisioning profiles
+    match(
+      type: "appstore",
+      app_identifier: "com.cmuxterm.ios",
+      readonly: true
+    )
+
+    # Build the archive
+    gym(
+      scheme: "cmux_iOS",
+      export_method: "app-store",
+      clean: true
+    )
+
+    # Upload to TestFlight
+    pilot(
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+  end
+
+  desc "Register bundle ID and create App Store Connect app record"
+  lane :register_app do
+    produce(
+      app_identifier: "com.cmuxterm.ios",
+      app_name: "cmux",
+      language: "English",
+      sku: "cmux_ios_001"
+    )
+  end
+
+  desc "Set up code signing (run once)"
+  lane :setup_signing do
+    match(
+      type: "appstore",
+      app_identifier: "com.cmuxterm.ios",
+      readonly: false
+    )
+  end
+end
