@@ -1,19 +1,46 @@
 # Fastfile for cmux_iOS
-# Builds, signs, and uploads to TestFlight via GitHub Actions.
+# Builds, signs, and uploads to TestFlight.
 
 default_platform(:ios)
 
 platform :ios do
+  desc "Run unit tests"
+  lane :test do
+    scan(
+      scheme: "cmux_iOS",
+      destination: "platform=iOS Simulator,name=iPhone 16",
+      clean: true
+    )
+  end
+
   desc "Build and upload to TestFlight"
   lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+
     # Generate xcodeproj from project.yml
-    sh("xcodegen")
+    sh("cd .. && xcodegen")
 
     # Fetch signing certificates and provisioning profiles
-    match(
-      type: "appstore",
-      app_identifier: "com.cmuxterm.ios",
-      readonly: true
+    get_certificates(
+      api_key: api_key
+    )
+    get_provisioning_profile(
+      api_key: api_key
+    )
+
+    # Increment build number
+    increment_build_number(
+      xcodeproj: "cmux_iOS.xcodeproj",
+      build_number: latest_testflight_build_number(
+        app_identifier: "com.cmuxterm.ios",
+        api_key: api_key
+      ) + 1
     )
 
     # Build the archive
@@ -26,26 +53,45 @@ platform :ios do
     # Upload to TestFlight
     pilot(
       skip_waiting_for_build_processing: true,
-      distribute_external: false
+      distribute_external: false,
+      api_key: api_key
     )
   end
 
   desc "Register bundle ID and create App Store Connect app record"
   lane :register_app do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+
     produce(
       app_identifier: "com.cmuxterm.ios",
       app_name: "cmux",
       language: "English",
-      sku: "cmux_ios_001"
+      sku: "cmux_ios_001",
+      api_key: api_key
     )
   end
 
-  desc "Set up code signing (run once)"
+  desc "Set up code signing (run once locally)"
   lane :setup_signing do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY_KEY_CONTENT"],
+      is_key_content_base64: false,
+      in_house: false
+    )
+
     match(
       type: "appstore",
       app_identifier: "com.cmuxterm.ios",
-      readonly: false
+      readonly: false,
+      api_key: api_key
     )
   end
 end
