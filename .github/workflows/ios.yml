@@ -49,5 +49,5 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_CONTENT }}
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
-          KEYCHAIN_PATH: build.keychain
+          KEYCHAIN_PATH: ~/Library/Keychains/build.keychain-db
         run: fastlane beta
