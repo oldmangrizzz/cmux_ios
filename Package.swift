@@ -8,13 +8,15 @@ let package = Package(
         .iOS(.v17)
     ],
     dependencies: [
-        .package(url: "https://github.com/migueldeicaza/SwiftTerm", from: "1.1.0")
+        .package(url: "https://github.com/migueldeicaza/SwiftTerm", from: "1.1.0"),
+        .package(url: "https://github.com/orlandos-nl/Citadel", from: "0.9.0")
     ],
     targets: [
         .target(
             name: "cmux_iOS",
             dependencies: [
-                .product(name: "SwiftTerm", package: "SwiftTerm")
+                .product(name: "SwiftTerm", package: "SwiftTerm"),
+                .product(name: "Citadel", package: "Citadel")
             ]
         ),
         .testTarget(

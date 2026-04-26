@@ -9,18 +9,21 @@
 /* Begin PBXBuildFile section */
 		0E863BEFFF2840757725C2D8 /* cmuxTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A04AE586884E2A922C8744 /* cmuxTheme.swift */; };
 		14131AA910B2C7E67D933320 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BF4D538F8DD21A71E074DE7 /* TerminalTheme.swift */; };
+		1875AC6F7A9F769E7462F8AE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8C707FD7138CA34113AB8C56 /* PrivacyInfo.xcprivacy */; };
 		196337642BDDD9370441FAF8 /* cmux_iOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AC6F70CC72B56460C28E4B1 /* cmux_iOSApp.swift */; };
 		224957FA22B5429F198E5B6A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = B29781BB8A53EA815820F03F /* SwiftTerm */; };
 		242B150EE23C2506A487E9F2 /* TerminalViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3010DC542FA248A1A2A2BEC4 /* TerminalViewModel.swift */; };
 		2E6CCA6EE26C12CCC8CDC08F /* TerminalTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28024C0A1EAC87BC81AEDBA6 /* TerminalTabView.swift */; };
 		322768751FD38B904D6B7733 /* CmuxdRelayClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67BC502339A61D408EFF9E64 /* CmuxdRelayClient.swift */; };
 		39A042243D0F4C02FC3F7A6D /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1935716C570F02421DC1824 /* TerminalView.swift */; };
+		3B9973C41B25A7652CBA1624 /* TerminalKeyboardAccessory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49DF398C51752E61D45FC482 /* TerminalKeyboardAccessory.swift */; };
 		7884DC2948BFE833F4523C6A /* SplitPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 767E0D2E8F6BDF1231CDC769 /* SplitPaneView.swift */; };
 		7CEE0BB2D952C331E136A013 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB37C58CA413B8F9FC1748F9 /* SettingsView.swift */; };
 		8A8BFB84B68609E7F0F38709 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C627B814C00C9C4867F2FA00 /* ContentView.swift */; };
 		9D7D0ECED8D36B024B71631A /* ConnectionSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 487608610C5AA38A7B99720B /* ConnectionSetupView.swift */; };
 		AFF59BCB154E51079CF990F8 /* cmux_iOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0C271FB27DE37CE0DCC6E7B /* cmux_iOSTests.swift */; };
 		B3A14734CE3C7DFD66D282E9 /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C59B61D1ADCBB6E24931F2 /* TerminalSession.swift */; };
+		CA7532FE101B0653EF42E30D /* Citadel in Frameworks */ = {isa = PBXBuildFile; productRef = 1F9F43ECB49CCBB66D84F8DF /* Citadel */; };
 		CC061F11AB1AF6CF388E018B /* ConnectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441528D3CB94E59F5895F307 /* ConnectionManager.swift */; };
 		F49806D8CA6CC900E382D291 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F46673780D98889D3A9E23C1 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -37,15 +40,18 @@
 
 /* Begin PBXFileReference section */
 		009CA641477E8FD19657F825 /* cmux_iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = cmux_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0D5FE2C4A1D9B31F4D5C81DB /* cmux_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = cmux_iOS.entitlements; sourceTree = "<group>"; };
 		28024C0A1EAC87BC81AEDBA6 /* TerminalTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTabView.swift; sourceTree = "<group>"; };
 		3010DC542FA248A1A2A2BEC4 /* TerminalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalViewModel.swift; sourceTree = "<group>"; };
 		35A04AE586884E2A922C8744 /* cmuxTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmuxTheme.swift; sourceTree = "<group>"; };
 		441528D3CB94E59F5895F307 /* ConnectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionManager.swift; sourceTree = "<group>"; };
 		487608610C5AA38A7B99720B /* ConnectionSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionSetupView.swift; sourceTree = "<group>"; };
+		49DF398C51752E61D45FC482 /* TerminalKeyboardAccessory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalKeyboardAccessory.swift; sourceTree = "<group>"; };
 		5BF4D538F8DD21A71E074DE7 /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
 		67BC502339A61D408EFF9E64 /* CmuxdRelayClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CmuxdRelayClient.swift; sourceTree = "<group>"; };
 		767E0D2E8F6BDF1231CDC769 /* SplitPaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitPaneView.swift; sourceTree = "<group>"; };
 		86C59B61D1ADCBB6E24931F2 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
+		8C707FD7138CA34113AB8C56 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		9AC6F70CC72B56460C28E4B1 /* cmux_iOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmux_iOSApp.swift; sourceTree = "<group>"; };
 		A51B5EAE8BB2FF1919937266 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0C271FB27DE37CE0DCC6E7B /* cmux_iOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = cmux_iOSTests.swift; sourceTree = "<group>"; };
@@ -62,6 +68,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				224957FA22B5429F198E5B6A /* SwiftTerm in Frameworks */,
+				CA7532FE101B0653EF42E30D /* Citadel in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,7 +137,9 @@
 			isa = PBXGroup;
 			children = (
 				F46673780D98889D3A9E23C1 /* Assets.xcassets */,
+				0D5FE2C4A1D9B31F4D5C81DB /* cmux_iOS.entitlements */,
 				A51B5EAE8BB2FF1919937266 /* Info.plist */,
+				8C707FD7138CA34113AB8C56 /* PrivacyInfo.xcprivacy */,
 			);
 			path = cmux_iOS;
 			sourceTree = "<group>";
@@ -152,6 +161,7 @@
 				C627B814C00C9C4867F2FA00 /* ContentView.swift */,
 				EB37C58CA413B8F9FC1748F9 /* SettingsView.swift */,
 				767E0D2E8F6BDF1231CDC769 /* SplitPaneView.swift */,
+				49DF398C51752E61D45FC482 /* TerminalKeyboardAccessory.swift */,
 				28024C0A1EAC87BC81AEDBA6 /* TerminalTabView.swift */,
 			);
 			path = UI;
@@ -202,6 +212,7 @@
 			name = cmux_iOS;
 			packageProductDependencies = (
 				B29781BB8A53EA815820F03F /* SwiftTerm */,
+				1F9F43ECB49CCBB66D84F8DF /* Citadel */,
 			);
 			productName = cmux_iOS;
 			productReference = 009CA641477E8FD19657F825 /* cmux_iOS.app */;
@@ -217,10 +228,10 @@
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					A52E1B3992C1FF0544AA33E3 = {
-						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
 					};
 					CE114D8DF5716F82EA48E9F2 = {
-						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -234,6 +245,7 @@
 			mainGroup = A59DB965EB485B189B45A2F8;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				2F1C258DFDC12B989A899FC1 /* XCRemoteSwiftPackageReference "Citadel" */,
 				13D35E549D7DBBE3930CDC5A /* XCRemoteSwiftPackageReference "SwiftTerm" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -253,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F49806D8CA6CC900E382D291 /* Assets.xcassets in Resources */,
+				1875AC6F7A9F769E7462F8AE /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -277,6 +290,7 @@
 				8A8BFB84B68609E7F0F38709 /* ContentView.swift in Sources */,
 				7CEE0BB2D952C331E136A013 /* SettingsView.swift in Sources */,
 				7884DC2948BFE833F4523C6A /* SplitPaneView.swift in Sources */,
+				3B9973C41B25A7652CBA1624 /* TerminalKeyboardAccessory.swift in Sources */,
 				B3A14734CE3C7DFD66D282E9 /* TerminalSession.swift in Sources */,
 				2E6CCA6EE26C12CCC8CDC08F /* TerminalTabView.swift in Sources */,
 				14131AA910B2C7E67D933320 /* TerminalTheme.swift in Sources */,
@@ -331,9 +345,9 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -404,9 +418,9 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -439,6 +453,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = cmux_iOS/cmux_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = cmux_iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -456,6 +471,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = cmux_iOS/cmux_iOS.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = cmux_iOS/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -526,9 +542,22 @@
 				minimumVersion = 1.1.0;
 			};
 		};
+		2F1C258DFDC12B989A899FC1 /* XCRemoteSwiftPackageReference "Citadel" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/orlandos-nl/Citadel";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		1F9F43ECB49CCBB66D84F8DF /* Citadel */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 2F1C258DFDC12B989A899FC1 /* XCRemoteSwiftPackageReference "Citadel" */;
+			productName = Citadel;
+		};
 		B29781BB8A53EA815820F03F /* SwiftTerm */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 13D35E549D7DBBE3930CDC5A /* XCRemoteSwiftPackageReference "SwiftTerm" */;

@@ -1,12 +1,14 @@
 import Foundation
 import SwiftTerm
+import Citadel
+import NIOCore
 
 /// Represents the transport layer for a terminal session.
 /// On iOS we can't fork/exec, so sessions connect to remote hosts.
 enum SessionTransport: Codable, Equatable, Identifiable, Sendable {
     /// Direct connection to cmuxd-remote via WebSocket relay.
     case cmuxdRelay(host: String, port: Int, token: String?)
-    /// SSH connection (forwarded through a WebSocket relay proxy).
+    /// SSH connection using Citadel (SwiftNIO SSH).
     case ssh(host: String, port: Int, user: String, auth: SSHAuth)
     /// Generic WebSocket terminal server (e.g., a tmux relay).
     case webSocket(url: String)
@@ -51,7 +53,7 @@ protocol TerminalSessionDelegate: AnyObject {
 /// Transport options:
 ///   - `.cmuxdRelay`: connects to cmuxd-remote's WebSocket relay directly
 ///   - `.webSocket`: generic WebSocket terminal server
-///   - `.ssh`: SSH connection (requires SSH library, falls back to relay)
+///   - `.ssh`: SSH connection via Citadel (SwiftNIO SSH)
 ///   - `.local`: local relay (test harness or cmuxd socket proxy)
 @MainActor
 final class TerminalSession: Identifiable, ObservableObject {
@@ -65,6 +67,9 @@ final class TerminalSession: Identifiable, ObservableObject {
 
     private var task: Task<Void, Never>?
     private var relayClient: CmuxdRelayClient?
+    private var wsTask: URLSessionWebSocketTask?
+    private var sshClient: SSHClient?
+    private var sshOutbound: TTYStdinWriter?
 
     init(transport: SessionTransport, title: String? = nil) {
         self.transport = transport
@@ -102,6 +107,8 @@ final class TerminalSession: Identifiable, ObservableObject {
         relayClient = nil
         (wsTask as? URLSessionWebSocketTask)?.cancel(with: .goingAway, reason: nil)
         wsTask = nil
+        sshOutbound = nil
+        sshClient = nil
         task?.cancel()
         task = nil
         isConnected = false
@@ -115,14 +122,20 @@ final class TerminalSession: Identifiable, ObservableObject {
         } else if let wsTask = wsTask {
             guard let data = text.data(using: .utf8) else { return }
             wsTask.send(.data(data)) { _ in }
+        } else if let outbound = sshOutbound {
+            var buffer = ByteBuffer(string: text)
+            Task {
+                try? await outbound.write(buffer)
+            }
         }
     }
 
     /// Resize the remote PTY.
     func resize(cols: Int, rows: Int) {
         guard isConnected else { return }
-        Task {
-            try? await relayClient?.resizeSession(cols: cols, rows: rows)
+        Task { [weak self] in
+            try? await self?.relayClient?.resizeSession(cols: cols, rows: rows)
+            try? await self?.sshOutbound?.changeSize(cols: cols, rows: rows, pixelWidth: 0, pixelHeight: 0)
         }
     }
 
@@ -147,11 +160,52 @@ final class TerminalSession: Identifiable, ObservableObject {
         delegate?.sessionDidConnect()
     }
 
-    /// SSH via relay proxy — connects through cmuxd's proxy.stream.
+    /// SSH via Citadel (SwiftNIO SSH).
     private func connectSSH(host: String, port: Int, user: String, auth: SSHAuth) async throws {
-        throw TerminalError.notImplemented(
-            "Direct SSH requires libssh2. Use cmuxdRelay transport or a WebSocket proxy."
+        let authMethod: SSHAuthenticationMethod
+        switch auth {
+        case .password(let password):
+            authMethod = .password(username: user, password: password)
+        case .key:
+            throw TerminalError.notImplemented("SSH key authentication requires a key store. Use password auth or a relay.")
+        }
+
+        let client = try await SSHClient.connect(
+            host: host,
+            port: port,
+            authenticationMethod: authMethod,
+            hostKeyValidator: .acceptAnything()
         )
+        self.sshClient = client
+
+        try await client.withTTY { [weak self] inbound, outbound in
+            guard let self else { return }
+            self.sshOutbound = outbound
+            defer { self.sshOutbound = nil }
+
+            await MainActor.run { [weak self] in
+                self?.isConnected = true
+                self?.title = "ssh:\(user)@\(host)"
+                self?.delegate?.sessionDidConnect()
+            }
+
+            do {
+                for try await output in inbound {
+                    switch output {
+                    case .stdout(let buffer), .stderr(let buffer):
+                        if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
+                            await MainActor.run { [weak self] in
+                                self?.receiveOutput(data)
+                            }
+                        }
+                    }
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.delegate?.sessionDidDisconnect(error: error)
+                }
+            }
+        }
     }
 
     /// Generic WebSocket terminal server.

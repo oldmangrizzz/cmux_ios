@@ -38,6 +38,11 @@ final class TerminalViewModel: ObservableObject, TerminalSessionDelegate {
         session.sendInput(String(decoding: data, as: UTF8.self))
     }
 
+    /// Send a plain-text string (e.g., from the accessory toolbar) to the session.
+    func sendText(_ text: String) {
+        session.sendInput(text)
+    }
+
     /// Called by the transport layer with received bytes — feed to terminal.
     private func feedOutput(_ data: Data) {
         let bytes = [UInt8](data)
