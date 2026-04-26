@@ -17,6 +17,7 @@ struct TerminalView: UIViewRepresentable {
         let term = SwiftTerm.TerminalView()
         term.terminalDelegate = context.coordinator
         applyTheme(to: term)
+        term.inputAccessoryView = makeAccessoryView(coordinator: context.coordinator)
         return term
     }
 
@@ -56,6 +57,16 @@ struct TerminalView: UIViewRepresentable {
     }
 
     @MainActor
+    private func makeAccessoryView(coordinator: Coordinator) -> TerminalInputAccessoryView {
+        TerminalInputAccessoryView(
+            onKey: { [weak coordinator] text in
+                coordinator?.viewModel.sendText(text)
+            },
+            onToggleCtrl: { },
+            onToggleMeta: { }
+        )
+    }
+
     class Coordinator: TerminalViewDelegate {
         let viewModel: TerminalViewModel
         /// Set once to avoid re-setting terminalView after the initial binding.
@@ -68,25 +79,33 @@ struct TerminalView: UIViewRepresentable {
         /// Registers the terminal view on the view model exactly once.
         func maybeRegister(_ term: SwiftTerm.TerminalView) {
             if !didRegister {
-                viewModel.terminalView = term
+                Task { @MainActor [viewModel] in
+                    viewModel.terminalView = term
+                }
                 didRegister = true
             }
         }
 
         func sizeChanged(source: SwiftTerm.TerminalView, newCols: Int, newRows: Int) {
-            viewModel.columns = newCols
-            viewModel.rows = newRows
+            Task { @MainActor [viewModel] in
+                viewModel.columns = newCols
+                viewModel.rows = newRows
+            }
         }
 
         func send(source: SwiftTerm.TerminalView, data: ArraySlice<UInt8>) {
             let data = Data(data)
-            viewModel.sendInput(data)
+            Task { @MainActor [viewModel] in
+                viewModel.sendInput(data)
+            }
         }
 
         func scrolled(source: SwiftTerm.TerminalView, position: Double) {}
 
         func setTerminalTitle(source: SwiftTerm.TerminalView, title: String) {
-            viewModel.session.title = title
+            Task { @MainActor [viewModel] in
+                viewModel.session.title = title
+            }
         }
 
         func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
