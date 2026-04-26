@@ -23,6 +23,26 @@ jobs:
       - name: Generate Xcode project
         run: xcodegen
 
+      - name: Import signing certificate
+        env:
+          IOS_DISTRIBUTION_P12: ${{ secrets.IOS_DISTRIBUTION_P12 }}
+        run: |
+          echo "$IOS_DISTRIBUTION_P12" | base64 -d > /tmp/cert.p12
+          security create-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
+          security list-keychains -s build.keychain login.keychain
+
+      - name: Install provisioning profile
+        env:
+          IOS_MOBILEPROVISION: ${{ secrets.IOS_MOBILEPROVISION }}
+        run: |
+          echo "$IOS_MOBILEPROVISION" | base64 -d > /tmp/AppStore.mobileprovision
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp /tmp/AppStore.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
       - name: Build and upload to TestFlight
         env:
           APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
