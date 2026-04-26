@@ -137,7 +137,7 @@ final class TerminalSession: Identifiable, ObservableObject {
     func disconnect() {
         relayClient?.disconnect()
         relayClient = nil
-        (wsTask as? URLSessionWebSocketTask)?.cancel(with: .goingAway, reason: nil)
+        wsTask?.cancel(with: .goingAway, reason: nil)
         wsTask = nil
         sshBridge = nil
         sshClient = nil
@@ -227,24 +227,12 @@ final class TerminalSession: Identifiable, ObservableObject {
         self.delegate?.sessionDidConnect()
 
         do {
-            try await client.withTTY { (inbound: TTYOutput, outbound: TTYStdinWriter) in
-                await bridge.setOutbound(outbound)
-                defer { Task { await bridge.clearOutbound() } }
-
-                do {
-                    for try await output in inbound {
-                        switch output {
-                        case .stdout(let buffer), .stderr(let buffer):
-                            if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
-                                outputContinuation.yield(data)
-                            }
-                        }
-                    }
-                } catch {
-                    await errorBox.set(error)
-                }
-                outputContinuation.finish()
-            }
+            try await Self.runTTYSession(
+                client: client,
+                bridge: bridge,
+                continuation: outputContinuation,
+                errorBox: errorBox
+            )
 
             await outputTask.value
             self.isConnected = false
@@ -258,6 +246,34 @@ final class TerminalSession: Identifiable, ObservableObject {
             self.sshBridge = nil
             self.sshClient = nil
             throw error
+        }
+    }
+
+    /// Nonisolated helper so the `withTTY` closure does not capture
+    /// `@MainActor`-isolated `self` (which would make the closure non-Sendable).
+    nonisolated private static func runTTYSession(
+        client: SSHClient,
+        bridge: SSHIOBridge,
+        continuation: AsyncStream<Data>.Continuation,
+        errorBox: ErrorBox
+    ) async throws {
+        try await client.withTTY { (inbound: TTYOutput, outbound: TTYStdinWriter) in
+            await bridge.setOutbound(outbound)
+            defer { Task { await bridge.clearOutbound() } }
+
+            do {
+                for try await output in inbound {
+                    switch output {
+                    case .stdout(let buffer), .stderr(let buffer):
+                        if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
+                            continuation.yield(data)
+                        }
+                    }
+                }
+            } catch {
+                await errorBox.set(error)
+            }
+            continuation.finish()
         }
     }
 
@@ -301,7 +317,7 @@ final class TerminalSession: Identifiable, ObservableObject {
     }
 
     deinit {
-        (wsTask as? URLSessionWebSocketTask)?.cancel()
+        wsTask?.cancel()
         relayClient = nil
         task?.cancel()
     }
