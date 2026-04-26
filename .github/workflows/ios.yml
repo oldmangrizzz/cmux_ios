@@ -28,8 +28,12 @@ jobs:
           IOS_DISTRIBUTION_P12: ${{ secrets.IOS_DISTRIBUTION_P12 }}
         run: |
           echo "$IOS_DISTRIBUTION_P12" | base64 -d > /tmp/cert.p12
-          security import /tmp/cert.p12 -k ~/Library/Keychains/login.keychain-db -P "" -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -k "" ~/Library/Keychains/login.keychain-db
+          security create-keychain -p "" build.keychain
+          security set-keychain-settings build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
+          security list-keychains -s build.keychain ~/Library/Keychains/login.keychain-db
 
       - name: Install provisioning profile
         env:
@@ -45,4 +49,5 @@ jobs:
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_CONTENT }}
           FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: 120
+          KEYCHAIN_PATH: build.keychain
         run: fastlane beta
