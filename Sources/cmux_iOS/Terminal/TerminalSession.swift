@@ -165,7 +165,7 @@ final class TerminalSession: Identifiable, ObservableObject {
         let authMethod: SSHAuthenticationMethod
         switch auth {
         case .password(let password):
-            authMethod = .password(username: user, password: password)
+            authMethod = SSHAuthenticationMethod.passwordBased(username: user, password: password)
         case .key:
             throw TerminalError.notImplemented("SSH key authentication requires a key store. Use password auth or a relay.")
         }
@@ -174,11 +174,12 @@ final class TerminalSession: Identifiable, ObservableObject {
             host: host,
             port: port,
             authenticationMethod: authMethod,
-            hostKeyValidator: .acceptAnything()
+            hostKeyValidator: .acceptAnything(),
+            reconnect: .never
         )
         self.sshClient = client
 
-        try await client.withTTY { [weak self] inbound, outbound in
+        try await client.withTTY { [weak self] (inbound: TTYOutput, outbound: TTYStdinWriter) in
             guard let self else { return }
             self.sshOutbound = outbound
             defer { self.sshOutbound = nil }
