@@ -28,7 +28,8 @@ platform :ios do
 
     # Fetch signing certificates and provisioning profiles
     get_certificates(
-      api_key: api_key
+      api_key: api_key,
+      keychain_path: ENV["KEYCHAIN_PATH"] || "~/Library/Keychains/login.keychain-db"
     )
     get_provisioning_profile(
       api_key: api_key
