@@ -39,6 +39,38 @@ enum SSHAuth: Codable, Equatable, Sendable {
     case key(id: String, passphrase: String?)
 }
 
+/// Actor wrapper around the SSH outbound writer so `sendInput` and `resize`
+/// can be called from `@MainActor` without capturing `self` in the
+/// `withTTY` closure (which would make it non-Sendable under Swift 6).
+actor SSHIOBridge {
+    private var outbound: TTYStdinWriter?
+
+    func setOutbound(_ writer: TTYStdinWriter) {
+        self.outbound = writer
+    }
+
+    func clearOutbound() {
+        self.outbound = nil
+    }
+
+    func send(_ text: String) async {
+        guard let outbound else { return }
+        let buffer = ByteBuffer(string: text)
+        try? await outbound.write(buffer)
+    }
+
+    func resize(cols: Int, rows: Int) async {
+        guard let outbound else { return }
+        try? await outbound.changeSize(cols: cols, rows: rows, pixelWidth: 0, pixelHeight: 0)
+    }
+}
+
+/// Actor box to ferry an error out of a nonisolated closure.
+actor ErrorBox {
+    private(set) var error: Error?
+    func set(_ e: Error?) { error = e }
+}
+
 /// Observes terminal I/O events from a session.
 @MainActor
 protocol TerminalSessionDelegate: AnyObject {
@@ -69,7 +101,7 @@ final class TerminalSession: Identifiable, ObservableObject {
     private var relayClient: CmuxdRelayClient?
     private var wsTask: URLSessionWebSocketTask?
     private var sshClient: SSHClient?
-    private var sshOutbound: TTYStdinWriter?
+    private var sshBridge: SSHIOBridge?
 
     init(transport: SessionTransport, title: String? = nil) {
         self.transport = transport
@@ -107,7 +139,7 @@ final class TerminalSession: Identifiable, ObservableObject {
         relayClient = nil
         (wsTask as? URLSessionWebSocketTask)?.cancel(with: .goingAway, reason: nil)
         wsTask = nil
-        sshOutbound = nil
+        sshBridge = nil
         sshClient = nil
         task?.cancel()
         task = nil
@@ -122,10 +154,9 @@ final class TerminalSession: Identifiable, ObservableObject {
         } else if let wsTask = wsTask {
             guard let data = text.data(using: .utf8) else { return }
             wsTask.send(.data(data)) { _ in }
-        } else if let outbound = sshOutbound {
-            var buffer = ByteBuffer(string: text)
+        } else if let bridge = sshBridge {
             Task {
-                try? await outbound.write(buffer)
+                try? await bridge.send(text)
             }
         }
     }
@@ -135,7 +166,7 @@ final class TerminalSession: Identifiable, ObservableObject {
         guard isConnected else { return }
         Task { [weak self] in
             try? await self?.relayClient?.resizeSession(cols: cols, rows: rows)
-            try? await self?.sshOutbound?.changeSize(cols: cols, rows: rows, pixelWidth: 0, pixelHeight: 0)
+            try? await self?.sshBridge?.resize(cols: cols, rows: rows)
         }
     }
 
@@ -179,33 +210,54 @@ final class TerminalSession: Identifiable, ObservableObject {
         )
         self.sshClient = client
 
-        try await client.withTTY { [weak self] (inbound: TTYOutput, outbound: TTYStdinWriter) in
-            guard let self else { return }
-            self.sshOutbound = outbound
-            defer { self.sshOutbound = nil }
+        let bridge = SSHIOBridge()
+        self.sshBridge = bridge
 
-            await MainActor.run { [weak self] in
-                self?.isConnected = true
-                self?.title = "ssh:\(user)@\(host)"
-                self?.delegate?.sessionDidConnect()
+        let (outputStream, outputContinuation) = AsyncStream<Data>.makeStream()
+        let errorBox = ErrorBox()
+
+        let outputTask = Task { @MainActor [weak self] in
+            for await data in outputStream {
+                self?.receiveOutput(data)
             }
+        }
 
-            do {
-                for try await output in inbound {
-                    switch output {
-                    case .stdout(let buffer), .stderr(let buffer):
-                        if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
-                            await MainActor.run { [weak self] in
-                                self?.receiveOutput(data)
+        self.isConnected = true
+        self.title = "ssh:\(user)@\(host)"
+        self.delegate?.sessionDidConnect()
+
+        do {
+            try await client.withTTY { (inbound: TTYOutput, outbound: TTYStdinWriter) in
+                await bridge.setOutbound(outbound)
+                defer { Task { await bridge.clearOutbound() } }
+
+                do {
+                    for try await output in inbound {
+                        switch output {
+                        case .stdout(let buffer), .stderr(let buffer):
+                            if let data = buffer.getData(at: 0, length: buffer.readableBytes) {
+                                outputContinuation.yield(data)
                             }
                         }
                     }
+                } catch {
+                    await errorBox.set(error)
                 }
-            } catch {
-                await MainActor.run { [weak self] in
-                    self?.delegate?.sessionDidDisconnect(error: error)
-                }
+                outputContinuation.finish()
             }
+
+            await outputTask.value
+            self.isConnected = false
+            self.sshBridge = nil
+            self.sshClient = nil
+            self.delegate?.sessionDidDisconnect(error: await errorBox.error)
+        } catch {
+            outputContinuation.finish()
+            await outputTask.value
+            self.isConnected = false
+            self.sshBridge = nil
+            self.sshClient = nil
+            throw error
         }
     }
 
