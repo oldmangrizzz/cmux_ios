@@ -1,6 +1,6 @@
 import Foundation
 import SwiftTerm
-import Citadel
+@preconcurrency import Citadel
 import NIOCore
 
 /// Represents the transport layer for a terminal session.
@@ -253,10 +253,6 @@ final class TerminalSession: Identifiable, ObservableObject {
         relayClient = nil
         task?.cancel()
     }
-
-    // MARK: - Internal state for WebSocket transport
-
-    private var wsTask: URLSessionWebSocketTask?
 }
 
 // MARK: - Relay Delegate Bridge
