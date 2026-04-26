@@ -26,15 +26,12 @@ jobs:
       - name: Import signing certificate
         env:
           IOS_DISTRIBUTION_P12: ${{ secrets.IOS_DISTRIBUTION_P12 }}
-          IOS_DISTRIBUTION_CER: ${{ secrets.IOS_DISTRIBUTION_CER }}
         run: |
-          echo "$IOS_DISTRIBUTION_P12" | base64 -d > /tmp/key.p12
-          echo "$IOS_DISTRIBUTION_CER" | base64 -d > /tmp/cert.cer
+          echo "$IOS_DISTRIBUTION_P12" | base64 -d > /tmp/cert.p12
           security create-keychain -p "" build.keychain
           security set-keychain-settings build.keychain
           security unlock-keychain -p "" build.keychain
-          security import /tmp/cert.cer -k build.keychain
-          security import /tmp/key.p12 -k build.keychain -T /usr/bin/codesign
+          security import /tmp/cert.p12 -k build.keychain -P "cmux" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -k "" build.keychain
           security list-keychains -s build.keychain ~/Library/Keychains/login.keychain-db
 
