@@ -49,7 +49,7 @@ platform :ios do
       scheme: "cmux_iOS",
       export_method: "app-store",
       clean: true,
-      xcargs: "DEVELOPMENT_TEAM=T5AFHQ4L9C"
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=T5AFHQ4L9C PROVISIONING_PROFILE=2f6f539c-0944-4b32-a897-07a2683eb10c"
     )
 
     # Upload to TestFlight
